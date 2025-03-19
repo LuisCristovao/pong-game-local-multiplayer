@@ -98,6 +98,11 @@
         <button id="connectButton">Join Game</button>
         <input type="text" id="peerIdInput" placeholder="Enter Host's Peer ID" style="display: none; width: 200px; margin-top: 10px; padding: 5px; background: #333; color: white; border: none; border-radius: 5px;" />
         <div id="connectionStatus" style="display: none;">Waiting for connection...</div>
+        <div id="qrContainer" class="hidden">
+            <h3>Scan this QR code to join the game</h3>
+            <img id="qrImage" src="" alt="QR Code" width="20%" height="20%">
+            <p id="qrLink" style="word-wrap: break-word; color: yellow;"></p>
+        </div>        
     </div>
     <div id="status">
         Player 1 (W/S or Left Touch): <span id="player1Score">0</span> / 
@@ -184,6 +189,19 @@
             }, 100);
         });
 
+
+        // Function to generate QR Code using an online service
+        function displayQRCode(peerId) {
+            const gameUrl = `${window.location.origin}?peerId=${peerId}`;
+            document.getElementById("qrLink").textContent = gameUrl;
+
+            // Generate QR Code using a public API (QR Server)
+            document.getElementById("qrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(gameUrl)}`;
+
+            // Show the QR code container
+            document.getElementById("qrContainer").classList.remove("hidden");
+        }
+
         // Host game
         startButton.addEventListener('click', () => {
             isHost = true;
@@ -193,7 +211,8 @@
             connectionStatus.style.display = 'block';
             
             connectionStatus.innerText = `Your Peer ID: ${connection_id} Waiting for player to connect...`;
-            
+            // Display QR Code
+            displayQRCode(connection_id);
             
         });
         // Function to join game automatically
