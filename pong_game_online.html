@@ -196,27 +196,34 @@
             
             
         });
-
+        // Function to join game automatically
+        function JoinGame(hostId) {
+            conn = peer.connect(hostId);
+            conn.on('open', function () {
+                console.log('Connected to host: ' + hostId);
+                connectionStatus.innerText = 'Connected! Starting game...';
+                conn.on('data', receiveData);
+                setTimeout(() => {
+                    introMenu.classList.add('hidden');
+                    startGame();
+                }, 100);
+            });
+        }
         // Join game
         connectButton.addEventListener('click', () => {
             peerIdInput.style.display = 'block';
             connectButton.innerText = 'Connect';
             connectButton.addEventListener('click', () => {
                 const hostId = peerIdInput.value;
-                conn = peer.connect(hostId);
-                conn.on('open', function() {
-                    console.log('Connected to host: ' + hostId);
-
-
-                    connectionStatus.innerText = 'Connected! Starting game...';
-                    conn.on('data', receiveData);
-                    setTimeout(() => {
-                        introMenu.classList.add('hidden');
-                        startGame();
-                    }, 100);
-                });
+                JoinGame(hostId)
             }, { once: true });
         });
+
+        // Function to get URL parameters
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
 
         // Send paddle position
         function sendPaddlePosition() {
@@ -651,6 +658,16 @@
             maxSpeed = 0.01 * canvas.width;
             trail.length = 0;
         });
+
+        // Automatically connect if peerId exists in URL
+        window.onload =  ()=> {
+            setTimeout( ()=>{
+                const hostId = getQueryParam("peerId");
+                if (hostId) {
+                    JoinGame(hostId);
+                }
+            },500)
+        };
     </script>
 </body>
 </html>
