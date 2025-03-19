@@ -134,7 +134,7 @@
         let scaleX = canvas.width / 800;
         let scaleY = canvas.height / 400;
         let baseSpeed = 0.01;
-        let maxSpeed = 0.01 * canvas.width;
+        let maxSpeed = 0.008 * canvas.width;
         let lastScorer = null;
         let ball = { 
             x: canvas.width / 2, 
@@ -170,6 +170,7 @@
         let conn = null;
         let isHost = false;
         let connection_id=null
+        let is_connected=false
 
         // PeerJS event handlers
         peer.on('open', function(id) {
@@ -246,10 +247,12 @@
                 console.log('Connected to host: ' + hostId);
                 //connectionStatus.innerText = 'Connected! Starting game...';
                 conn.on('data', receiveData);
-                setTimeout(() => {
-                    introMenu.classList.add('hidden');
+                introMenu.classList.add('hidden');
+                if(!is_connected){
                     startGame();
-                }, 100);
+                }
+                
+                
             });
         }
         // Join game
@@ -371,6 +374,7 @@
         // Start game
         function startGame() {
             console.log('Game started');
+            is_connected=true
             if (isHost) {
                 const initialSpeed = baseSpeed * canvas.width * 0.5;
                 ball.dx = initialSpeed;
@@ -702,14 +706,25 @@
             trail.length = 0;
         });
 
+        function tryConnect(reconnect_time=500){
+            
+            const hostId = getQueryParam("peerId");
+            if (hostId) {
+                
+                if(conn==null || !is_connected){
+                    console.log("try connecting...")
+                    setTimeout(()=>{
+                        JoinGame(hostId);
+                        tryConnect()
+                    },reconnect_time)
+                }
+            }
+           
+            
+        }
         // Automatically connect if peerId exists in URL
         window.onload =  ()=> {
-            setTimeout( ()=>{
-                const hostId = getQueryParam("peerId");
-                if (hostId) {
-                    JoinGame(hostId);
-                }
-            },500)
+            tryConnect()
         };
     </script>
 </body>
